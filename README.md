@@ -13,6 +13,12 @@ Userscript do Violentmonkey, który dokłada na GitHubie informacje o pull reque
 
 Aktualizacje przychodzą same: Violentmonkey sprawdza nowe wersje w tym repo. Ręcznie: panel Violentmonkey → **Check for updates**.
 
+Najnowszą wersję można też skopiować do schowka (macOS) i wkleić ręcznie w edycji skryptu w Violentmonkey:
+
+```bash
+~/IdeaProjects/BetterGitHub/copy-latest.sh
+```
+
 Bez logowania przez aplikację można wkleić własny token: menu Violentmonkey → **Ustaw token ręcznie (PAT)**. Token fine-grained z uprawnieniem **Pull requests: Read and write**.
 
 ## Co robi
