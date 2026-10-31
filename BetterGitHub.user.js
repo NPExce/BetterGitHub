@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name         GitHub PR: approvale, wątki, reviewerzy
-// @namespace    adrian.rostkowski.github-pr-badges
-// @version      1.13.1
+// @name         BetterGitHub
+// @namespace    adrian.rostkowski.bettergithub
+// @version      1.14.0
 // @description  Lista PR: approvale, rozwiązane wątki (np. 3/8), reviewerzy, konflikty, zmienione linie, aktywność, komentujący i PR czekające na Ciebie. Strona PR: przycisk Review (Approve, Request changes, Comment) jako zalogowany użytkownik i kopiowanie ścieżki pliku z wątków review. Logowanie przez GitHub albo token. Wyniki są zapamiętywane i odświeżane w tle.
-// @homepageURL  https://github.com/NPExce/github-pr-badges
-// @updateURL    https://raw.githubusercontent.com/NPExce/github-pr-badges/main/github-pr-badges.user.js
-// @downloadURL  https://raw.githubusercontent.com/NPExce/github-pr-badges/main/github-pr-badges.user.js
+// @homepageURL  https://github.com/NPExce/BetterGitHub
+// @updateURL    https://raw.githubusercontent.com/NPExce/BetterGitHub/main/BetterGitHub.user.js
+// @downloadURL  https://raw.githubusercontent.com/NPExce/BetterGitHub/main/BetterGitHub.user.js
 // @match        https://github.com/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue

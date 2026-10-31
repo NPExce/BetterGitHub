@@ -1,11 +1,11 @@
-# GitHub PR badges
+# BetterGitHub
 
 Userscript do Violentmonkey, który dokłada na GitHubie informacje o pull requestach: approvale, wątki review, kto komentuje i co czeka na Ciebie.
 
 ## Instalacja
 
 1. Zainstaluj w przeglądarce rozszerzenie **Violentmonkey** (Chrome, Firefox, Zen, Edge).
-2. Otwórz link: [github-pr-badges.user.js](https://raw.githubusercontent.com/NPExce/github-pr-badges/main/github-pr-badges.user.js).
+2. Otwórz link: [BetterGitHub.user.js](https://raw.githubusercontent.com/NPExce/BetterGitHub/main/BetterGitHub.user.js).
 3. Violentmonkey pokaże okno instalacji. Kliknij **Install**.
 4. Wejdź na listę PR dowolnego repo (np. `/pulls`). W wierszu PR pojawi się przycisk **Zaloguj przez GitHub**.
 5. Kliknij go, potem **Otwórz GitHub**, wklej kod i zatwierdź dostęp.
