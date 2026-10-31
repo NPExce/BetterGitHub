@@ -24,7 +24,7 @@ Bez logowania przez aplikację można wkleić własny token: menu Violentmonkey 
 ## Co robi
 
 **Lista PR**
-- Approvale z awatarami: kto zatwierdził, na kogo czekamy.
+- Approvale z awatarami: kto zatwierdził (kolorowe), kto jest przypisany do review i nie dał approvala (szare).
 - Prośby o zmiany.
 - Wątki review: rozwiązane / wszystkie (np. `3/8`) i awatary osób, które komentują.
 - Konflikt z gałęzią bazową, gałąź „za base”, draft.
@@ -51,7 +51,7 @@ Bez logowania przez aplikację można wkleić własny token: menu Violentmonkey 
 **Pozostałe**
 - Approvale **zielone** – komplet approvali.
 - Approvale z **fioletową ramką** – jesteś poproszony o review.
-- Szary awatar przy approvalach – czekamy na review tej osoby.
+- Szary awatar przy approvalach – osoba przypisana do review, która nie dała approvala (jeszcze nie zrobiła review albo tylko skomentowała).
 - **Czerwony** – prośba o zmiany albo konflikt.
 - **Żółty** – gałąź za base albo brak aktywności od 5 dni.
 

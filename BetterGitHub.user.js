@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BetterGitHub
 // @namespace    adrian.rostkowski.bettergithub
-// @version      1.14.0
+// @version      1.15.0
 // @description  Lista PR: approvale, rozwiązane wątki (np. 3/8), reviewerzy, konflikty, zmienione linie, aktywność, komentujący i PR czekające na Ciebie. Strona PR: przycisk Review (Approve, Request changes, Comment) jako zalogowany użytkownik i kopiowanie ścieżki pliku z wątków review. Logowanie przez GitHub albo token. Wyniki są zapamiętywane i odświeżane w tle.
 // @homepageURL  https://github.com/NPExce/BetterGitHub
 // @updateURL    https://raw.githubusercontent.com/NPExce/BetterGitHub/main/BetterGitHub.user.js
@@ -507,6 +507,9 @@ fragment ztpr on PullRequest {
   convComments: comments(last: 10) {
     nodes { reactions(first: 1, orderBy: { field: CREATED_AT, direction: DESC }) { nodes { createdAt content user { login } } } }
   }
+  latestReviews(first: 20) {
+    nodes { state author { __typename login avatarUrl(size: 40) } }
+  }
   latestOpinionatedReviews(first: 20, writersOnly: true) {
     nodes { state author { login avatarUrl(size: 40) } }
   }
@@ -732,6 +735,11 @@ fragment ztpr on PullRequest {
     const approved = reviews.filter((x) => x.state === 'APPROVED');
     const changes = reviews.filter((x) => x.state === 'CHANGES_REQUESTED');
     const requested = ((pr.reviewRequests || {}).nodes || []).map((n) => n && n.requestedReviewer).filter(Boolean);
+    // Reviewerzy, którzy zostawili tylko komentarz: GitHub zdejmuje ich z próśb o review, a approvala nie dali.
+    const commented = ((pr.latestReviews || {}).nodes || [])
+      .filter((x) => x && x.state === 'COMMENTED' && x.author && x.author.__typename !== 'Bot')
+      .filter((x) => !pr.author || x.author.login !== pr.author.login)
+      .map((x) => ({ login: x.author.login, avatarUrl: x.author.avatarUrl, commented: true }));
 
     const rt = pr.reviewThreads || { totalCount: 0, nodes: [] };
     const threadsTotal = rt.totalCount || 0;
@@ -780,7 +788,7 @@ fragment ztpr on PullRequest {
     const commenters = [...byLogin.values()].sort((x, y) => (y.open > 0) - (x.open > 0) || y.threads - x.threads);
 
     return {
-      approved, changes, requested, threadsTotal, commenters,
+      approved, changes, requested, commented, threadsTotal, commenters,
       open: open.length, openOutdated, replyNeeded, replyStarted, replyJoined, reviewRequested,
       mine: reviewRequested || replyNeeded > 0,
     };
@@ -829,7 +837,7 @@ fragment ztpr on PullRequest {
     });
     const more = (count, title) => (count > 0 ? h('span', { class: 'ztpr-more', title }, '+' + count) : null);
 
-    // Kolumna 1: approvale + awatary (kolorowe: zatwierdzili, szare: czekamy na nich)
+    // Kolumna 1: approvale + awatary (kolorowe: zatwierdzili, szare: przypisani do review bez approvala)
     const approvedLogins = new Set(a.approved.map((x) => x.author.login));
     const changesLogins = new Set(a.changes.map((x) => x.author.login));
     const reRequested = new Set();
@@ -840,6 +848,10 @@ fragment ztpr on PullRequest {
       if (!x.login) continue;
       if (approvedLogins.has(x.login) || changesLogins.has(x.login)) reRequested.add(x.login);
       else waitingUsers.push(x);
+    }
+    for (const x of a.commented) {
+      if (approvedLogins.has(x.login) || changesLogins.has(x.login) || waitingUsers.some((w) => w.login === x.login)) continue;
+      waitingUsers.push(x);
     }
     const waitingNames = [...waitingUsers.map((x) => x.login), ...teams.map((t) => 'zespół ' + (t.slug || t.name))];
 
@@ -864,7 +876,7 @@ fragment ztpr on PullRequest {
     if (waitCount) {
       const shown = waitingUsers.slice(0, MAX_AV_WAIT);
       apprKids.push(h('span', { class: 'ztpr-stack ztpr-stack-wait' },
-        shown.map((x) => av(x.login, x.avatarUrl, 'ztpr-av-wait', `${x.login}: czeka na jego review`)),
+        shown.map((x) => av(x.login, x.avatarUrl, 'ztpr-av-wait', x.commented ? `${x.login}: skomentował, bez approvala` : `${x.login}: czeka na jego review`)),
         shown.length ? more(waitCount - shown.length, 'Czekamy na: ' + waitingNames.join(', '))
           : h('span', { class: 'ztpr-more', title: 'Czekamy na: ' + waitingNames.join(', ') }, icon('people'), String(waitCount))
       ));
