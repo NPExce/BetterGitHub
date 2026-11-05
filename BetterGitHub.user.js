@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BetterGitHub
 // @namespace    adrian.rostkowski.bettergithub
-// @version      1.16.1
+// @version      1.17.0
 // @description  Lista PR: approvale, rozwiązane wątki (np. 3/8), reviewerzy, konflikty, zmienione linie, aktywność, komentujący i PR czekające na Ciebie. Strona PR: przycisk Review (Approve, Request changes, Comment) jako zalogowany użytkownik i kopiowanie ścieżki pliku z wątków review. Logowanie przez GitHub albo token. Wyniki są zapamiętywane i odświeżane w tle.
 // @homepageURL  https://github.com/NPExce/BetterGitHub
 // @updateURL    https://raw.githubusercontent.com/NPExce/BetterGitHub/main/BetterGitHub.user.js
@@ -293,6 +293,22 @@
     window.alert(off ? 'Anonimowy licznik użytkowników wyłączony.' : 'Anonimowy licznik użytkowników włączony.');
   });
 
+  GM_registerMenuCommand(GM_getValue('nick', '') ? `Nick w liczniku: ${GM_getValue('nick', '')} (zmień)` : 'Podpisz się nickiem (opcjonalnie)', askNick);
+
+  // Opcjonalny nick: autor widzi, kto używa BetterGitHub, i może napisać o nowościach. Pusty = anonimowo.
+  function askNick() {
+    const v = window.prompt(
+      'Twój nick, np. login GitHub (opcjonalnie).\nAutor BetterGitHub zobaczy, że używasz pluginu, i będzie mógł napisać o nowościach albo zapytać o pomysły. ' +
+      'Nick nie jest widoczny publicznie.\nZostaw puste, żeby zostać anonimowym.',
+      GM_getValue('nick', '')
+    );
+    if (v === null) return;
+    // serwis odrzuca znaki sterujące i < > " \
+    GM_setValue('nick', v.replace(/[\u0000-\u001f\u007f<>"\\]/g, '').trim().slice(0, 40));
+    GM_setValue('telemetrySentDay', '');
+    usagePing();
+  }
+
   // ---------- anonimowy licznik użytkowników (wspólny z BetterJ) ----------
   // Raz dziennie: losowy identyfikator instalacji, wersja skryptu i rodzaj przeglądarki. Nic o koncie, repo ani PR.
   const TELEMETRY_URL = 'https://adrros-telemetry.adrros.workers.dev/ping';
@@ -321,7 +337,8 @@
       timeout: 5000,
       anonymous: true,
       headers: { 'Content-Type': 'application/json' },
-      data: JSON.stringify({ product: 'bettergithub', id, version: GM_info.script.version, ide: browserName() }),
+      // pusty nick usuwa go po stronie serwisu, więc wysyłamy go zawsze
+      data: JSON.stringify({ product: 'bettergithub', id, version: GM_info.script.version, ide: browserName(), nick: GM_getValue('nick', '') }),
       // dzień zapisujemy dopiero po przyjęciu pingu, więc nieudana próba powtórzy się przy następnym wejściu
       onload: (r) => {
         if (r.status >= 200 && r.status < 300) GM_setValue('telemetrySentDay', today);
