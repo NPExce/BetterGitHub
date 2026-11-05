@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BetterGitHub
 // @namespace    adrian.rostkowski.bettergithub
-// @version      1.16.0
+// @version      1.16.1
 // @description  Lista PR: approvale, rozwiązane wątki (np. 3/8), reviewerzy, konflikty, zmienione linie, aktywność, komentujący i PR czekające na Ciebie. Strona PR: przycisk Review (Approve, Request changes, Comment) jako zalogowany użytkownik i kopiowanie ścieżki pliku z wątków review. Logowanie przez GitHub albo token. Wyniki są zapamiętywane i odświeżane w tle.
 // @homepageURL  https://github.com/NPExce/BetterGitHub
 // @updateURL    https://raw.githubusercontent.com/NPExce/BetterGitHub/main/BetterGitHub.user.js
@@ -309,8 +309,7 @@
   function usagePing() {
     if (!TELEMETRY_URL || GM_getValue('telemetryOff', false)) return;
     const today = new Date().toISOString().slice(0, 10);
-    if (GM_getValue('telemetryDay', '') === today) return;
-    GM_setValue('telemetryDay', today);
+    if (GM_getValue('telemetrySentDay', '') === today) return;
     let id = GM_getValue('installId', '');
     if (!id) {
       id = crypto.randomUUID();
@@ -323,6 +322,13 @@
       anonymous: true,
       headers: { 'Content-Type': 'application/json' },
       data: JSON.stringify({ product: 'bettergithub', id, version: GM_info.script.version, ide: browserName() }),
+      // dzień zapisujemy dopiero po przyjęciu pingu, więc nieudana próba powtórzy się przy następnym wejściu
+      onload: (r) => {
+        if (r.status >= 200 && r.status < 300) GM_setValue('telemetrySentDay', today);
+        else console.warn('[BetterGitHub] licznik użytkowników: HTTP ' + r.status, r.responseText);
+      },
+      onerror: (e) => console.warn('[BetterGitHub] licznik użytkowników: brak połączenia', e),
+      ontimeout: () => console.warn('[BetterGitHub] licznik użytkowników: timeout'),
     });
   }
 
