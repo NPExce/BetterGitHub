@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         BetterGitHub
 // @namespace    adrian.rostkowski.bettergithub
-// @version      1.15.0
+// @version      1.16.0
 // @description  Lista PR: approvale, rozwiązane wątki (np. 3/8), reviewerzy, konflikty, zmienione linie, aktywność, komentujący i PR czekające na Ciebie. Strona PR: przycisk Review (Approve, Request changes, Comment) jako zalogowany użytkownik i kopiowanie ścieżki pliku z wątków review. Logowanie przez GitHub albo token. Wyniki są zapamiętywane i odświeżane w tle.
 // @homepageURL  https://github.com/NPExce/BetterGitHub
 // @updateURL    https://raw.githubusercontent.com/NPExce/BetterGitHub/main/BetterGitHub.user.js
@@ -15,6 +15,7 @@
 // @grant        GM_setClipboard
 // @connect      api.github.com
 // @connect      github.com
+// @connect      adrros-telemetry.adrros.workers.dev
 // @inject-into  content
 // @run-at       document-idle
 // @noframes
@@ -286,6 +287,44 @@
   GM_registerMenuCommand('Wyloguj', logout);
   GM_registerMenuCommand('Wymagana liczba approvali', askRequired);
   GM_registerMenuCommand('Odśwież dane PR', refreshAll);
+  GM_registerMenuCommand(GM_getValue('telemetryOff', false) ? 'Włącz anonimowy licznik użytkowników' : 'Wyłącz anonimowy licznik użytkowników', () => {
+    const off = !GM_getValue('telemetryOff', false);
+    GM_setValue('telemetryOff', off);
+    window.alert(off ? 'Anonimowy licznik użytkowników wyłączony.' : 'Anonimowy licznik użytkowników włączony.');
+  });
+
+  // ---------- anonimowy licznik użytkowników (wspólny z BetterJ) ----------
+  // Raz dziennie: losowy identyfikator instalacji, wersja skryptu i rodzaj przeglądarki. Nic o koncie, repo ani PR.
+  const TELEMETRY_URL = 'https://adrros-telemetry.adrros.workers.dev/ping';
+
+  function browserName() {
+    const ua = navigator.userAgent;
+    if (/Edg\//.test(ua)) return 'edge';
+    if (/Firefox\//.test(ua)) return 'firefox';
+    if (/Chrome\//.test(ua)) return 'chrome';
+    if (/Safari\//.test(ua)) return 'safari';
+    return 'other';
+  }
+
+  function usagePing() {
+    if (!TELEMETRY_URL || GM_getValue('telemetryOff', false)) return;
+    const today = new Date().toISOString().slice(0, 10);
+    if (GM_getValue('telemetryDay', '') === today) return;
+    GM_setValue('telemetryDay', today);
+    let id = GM_getValue('installId', '');
+    if (!id) {
+      id = crypto.randomUUID();
+      GM_setValue('installId', id);
+    }
+    GM_xmlhttpRequest({
+      method: 'POST',
+      url: TELEMETRY_URL,
+      timeout: 5000,
+      anonymous: true,
+      headers: { 'Content-Type': 'application/json' },
+      data: JSON.stringify({ product: 'bettergithub', id, version: GM_info.script.version, ide: browserName() }),
+    });
+  }
 
   // ---------- logowanie przez aplikację GitHub (device flow) ----------
   const DEVICE_URL = 'https://github.com/login/device/code';
@@ -1622,4 +1661,5 @@ fragment ztpr on PullRequest {
   });
 
   scheduleScan(0);
+  usagePing();
 })();

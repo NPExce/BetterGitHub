@@ -61,6 +61,13 @@ Bez logowania przez aplikację można wkleić własny token: menu Violentmonkey 
 - Ustaw token ręcznie (PAT)
 - Wymagana liczba approvali (np. `2` pokazuje `1/2`)
 - Odśwież dane PR
+- Wyłącz / włącz anonimowy licznik użytkowników
+
+## Anonimowy licznik użytkowników
+
+Raz dziennie skrypt wysyła do [adrros-telemetry](https://adrros-telemetry.adrros.workers.dev/stats) trzy rzeczy: losowy identyfikator instalacji (wygenerowany raz, niezwiązany z kontem GitHub), wersję skryptu i rodzaj przeglądarki. Nie wysyła loginu, repo, PR ani niczego z GitHuba. Adres IP nie jest zapisywany. Służy tylko do policzenia, ile instalacji używa BetterGitHub (ten sam licznik co w BetterJ).
+
+Wyłączenie: menu Violentmonkey → **Wyłącz anonimowy licznik użytkowników**.
 
 ## Ograniczenia
 
